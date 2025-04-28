@@ -1,4 +1,5 @@
 #include<iostream>
+#include<fstream>
 #include<vector>
 #include<string>
 using namespace std;
@@ -24,6 +25,61 @@ class user{
         string getUsername() {
             return username;
         } 
+        string getPassword() {   
+            return password;
+        }
+};
+
+class cab{
+    public:
+    static void displayCabOptions() {
+        cout << "\nChoose a cab type:\n";
+        cout << "1. Bike  (Rs 10/km)\n";
+        cout << "2. Auto (Rs 15/km)\n";
+        cout << "3. Car (Rs 20/km)\n";
+    }
+    static float getRate(const string& cabType) {
+        if (cabType == "Bike") return 10;
+        if (cabType == "Auto") return 15;
+        if (cabType == "Car") return 20;
+        return 0;
+    }
+};
+
+class booking{
+    private:
+        string username, cabType;
+        float distance, fare;
+        bool cancelled = false;
+
+    public:
+        booking(string user, string type, float dist) {
+        username = user;
+        cabType = type;
+        distance = dist;
+        fare = cab::getRate(type) * dist;
+    }
+    
+    void cancelBooking() {
+        cancelled = true;
+        cout << "Booking has been cancelled.\n";
+    }
+
+    void displayBooking() {
+      if(cancelled)
+      {
+            cout<<"Booking has been cancelled"<<endl;
+      }
+      else 
+      {
+        cout<<"Booking confirmed"<<endl;
+        cout << "User: " << username << endl;
+        cout << "Cab Type: " << cabType << endl;
+        cout << "Distance: " << distance << " km\n";
+        cout << "Fare: Rs " << fare << endl;
+      }
+    }
+
 };
 
 class userLogin{
@@ -31,6 +87,7 @@ class userLogin{
         vector<user> users;
         user currentUser;
         bool isLogged = false;
+        vector<booking> rideHistory;
     public:
     void addUser(){
         string u,p;
@@ -41,9 +98,27 @@ class userLogin{
         user newUser;
         newUser.setData(u,p);
         users.push_back(newUser);
+        saveUsersToFile(); 
         cout<<"Registered successfully"<<endl;
         currentUser = newUser;
         isLogged = true;
+    }
+    void loadUsersFromFile() {
+        ifstream inFile("users.txt");
+        string u, p;
+        while (inFile >> u >> p) {
+            user newUser;
+            newUser.setData(u, p);
+            users.push_back(newUser);
+        }
+        inFile.close();
+    }
+    void saveUsersToFile() {
+        ofstream outFile("users.txt");
+        for (auto &user : users) {
+            outFile << user.getUsername() << " " << user.getPassword() << endl;
+        }
+        outFile.close();
     }
     
         void loginUser(){
@@ -75,47 +150,36 @@ class userLogin{
         user getCurrentUser(){
             return currentUser;
         }
-};
-
-class cab{
-    public:
-    static void displayCabOptions() {
-        cout << "\nChoose a cab type:\n";
-        cout << "1. Bike  (Rs 10/km)\n";
-        cout << "2. Auto (Rs 15/km)\n";
-        cout << "3. Car (Rs 20/km)\n";
-    }
-    static float getRate(const string& cabType) {
-        if (cabType == "Bike") return 10;
-        if (cabType == "Auto") return 15;
-        if (cabType == "Car") return 20;
-        return 0;
-    }
-};
-
-class booking{
-    private:
-        string username, cabType;
-        float distance, fare;
-    public:
-        booking(string user, string type, float dist) {
-        username = user;
-        cabType = type;
-        distance = dist;
-        fare = cab::getRate(type) * dist;
-    }
-    void displayBooking() {
-        cout<<"Booking confirmed"<<endl;
-        cout << "User: " << username << endl;
-        cout << "Cab Type: " << cabType << endl;
-        cout << "Distance: " << distance << " km\n";
-        cout << "Fare: ₹" << fare << endl;
-    }
+         
+        void addRide(booking b){
+            rideHistory.push_back(b);
+        }
+        void viewRideHistory(){
+            if (rideHistory.empty()) {
+                cout << "No rides found."<<endl;
+                return;
+            }
+            cout << "\nRide History:\n";
+            for (int i = 0; i < rideHistory.size(); i++) {
+                cout << "\nRide " << i + 1 << ":\n";
+                rideHistory[i].displayBooking();
+            }
+        }
+        void cancelLastRide() {
+            if (!rideHistory.empty()) {
+                rideHistory.back().cancelBooking();
+            } else {
+                cout << "No booking to cancel.\n";
+            }
+        }
+        
 };
 
 int main() {
     userLogin userSystem;
+    userSystem.loadUsersFromFile();
     int choice;
+    char cancelChoice;
     cout << "Welcome to the Online Cab Booking System\n";
 
     while (true) {
@@ -128,61 +192,11 @@ int main() {
 
         if (choice == 1) {
             userSystem.addUser();
-            if (userSystem.loginStatus()) {
-                // If login successful, allow cab booking
-                string cabType;
-                int cabChoice;
-                float distance;
-
-                cab::displayCabOptions();
-                cout << "Enter your cab choice (1/2/3): ";
-                cin >> cabChoice;
-
-                if (cabChoice == 1) cabType = "Bike";
-                else if (cabChoice == 2) cabType = "Auto";
-                else if (cabChoice == 3) cabType = "Car";
-                else {
-                    cout << "Invalid cab choice.\n";
-                    continue;
-                }
-
-                cout << "Enter distance (in km): ";
-                cin >> distance;
-
-                booking b(userSystem.getCurrentUser().getUsername(), cabType, distance);
-                b.displayBooking();
-
-                userSystem.logoutUser(); // Logout after booking
-            }
+            // user is automatically logged in after registration
+            // so go to sub-menu immediately
         }
         else if (choice == 2) {
             userSystem.loginUser();
-            if (userSystem.loginStatus()) {
-                // If login successful, allow cab booking
-                string cabType;
-                int cabChoice;
-                float distance;
-
-                cab::displayCabOptions();
-                cout << "Enter your cab choice (1/2/3): ";
-                cin >> cabChoice;
-
-                if (cabChoice == 1) cabType = "Bike";
-                else if (cabChoice == 2) cabType = "Auto";
-                else if (cabChoice == 3) cabType = "Car";
-                else {
-                    cout << "Invalid cab choice.\n";
-                    continue;
-                }
-
-                cout << "Enter distance (in km): ";
-                cin >> distance;
-
-                booking b(userSystem.getCurrentUser().getUsername(), cabType, distance);
-                b.displayBooking();
-
-                userSystem.logoutUser(); // Logout after booking
-            }
         }
         else if (choice == 3) {
             cout << "Thank you for using the system!\n";
@@ -191,7 +205,54 @@ int main() {
         else {
             cout << "Invalid option. Try again.\n";
         }
-    }
 
+        while (userSystem.loginStatus()) {
+            int subChoice;
+            cout << "\n1. Book a Cab\n2. Cancel the ride\n3. View Ride History\n4. Logout\nEnter your choice: ";
+            cin >> subChoice;
+
+            if (subChoice == 1) {
+                string cabType;
+                int cabChoice;
+                float distance;
+
+                cab::displayCabOptions();
+                cout << "Enter your cab choice (1/2/3): ";
+                cin >> cabChoice;
+
+                if (cabChoice == 1) cabType = "Bike";
+                else if (cabChoice == 2) cabType = "Auto";
+                else if (cabChoice == 3) cabType = "Car";
+                else {
+                    cout << "Invalid cab choice.\n";
+                    continue;
+                }
+
+                cout << "Enter distance (in km): ";
+                cin >> distance;
+
+                booking b(userSystem.getCurrentUser().getUsername(), cabType, distance);
+                b.displayBooking();
+                userSystem.addRide(b);
+            }
+            else if (subChoice == 2) {
+                cout << "Do you want to cancel booking? (y/n): ";
+                cin >> cancelChoice;
+                if (cancelChoice == 'y' || cancelChoice == 'Y') {
+                    userSystem.cancelLastRide();
+                }
+            }
+            else if (subChoice == 3) {
+                userSystem.viewRideHistory();
+            }
+            else if (subChoice == 4) {
+                userSystem.logoutUser();
+                cout << endl;
+            }
+            else {
+                cout << "Invalid option.\n";
+            }
+        }
+    }
     return 0;
 }

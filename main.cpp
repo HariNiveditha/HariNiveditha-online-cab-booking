@@ -32,17 +32,20 @@ class userLogin{
         user currentUser;
         bool isLogged = false;
     public:
-        void addUser(){
-            string u,p;
-            cout<<"Enter new username: ";
-            cin>>u;
-            cout<<"Enter new password: ";
-            cin>>p;
-            user newUser;
-            newUser.setData(u,p);
-            users.push_back(newUser);
-            cout<<"Registered successfully"<<endl;
-        }
+    void addUser(){
+        string u,p;
+        cout<<"Enter new username: ";
+        cin>>u;
+        cout<<"Enter new password: ";
+        cin>>p;
+        user newUser;
+        newUser.setData(u,p);
+        users.push_back(newUser);
+        cout<<"Registered successfully"<<endl;
+        currentUser = newUser;
+        isLogged = true;
+    }
+    
         void loginUser(){
             string u,p;
             bool existing = false;
@@ -78,9 +81,9 @@ class cab{
     public:
     static void displayCabOptions() {
         cout << "\nChoose a cab type:\n";
-        cout << "1. Bike  (₹10/km)\n";
-        cout << "2. Auto (₹15/km)\n";
-        cout << "3. Car (₹20/km)\n";
+        cout << "1. Bike  (Rs 10/km)\n";
+        cout << "2. Auto (Rs 15/km)\n";
+        cout << "3. Car (Rs 20/km)\n";
     }
     static float getRate(const string& cabType) {
         if (cabType == "Bike") return 10;
@@ -125,6 +128,32 @@ int main() {
 
         if (choice == 1) {
             userSystem.addUser();
+            if (userSystem.loginStatus()) {
+                // If login successful, allow cab booking
+                string cabType;
+                int cabChoice;
+                float distance;
+
+                cab::displayCabOptions();
+                cout << "Enter your cab choice (1/2/3): ";
+                cin >> cabChoice;
+
+                if (cabChoice == 1) cabType = "Bike";
+                else if (cabChoice == 2) cabType = "Auto";
+                else if (cabChoice == 3) cabType = "Car";
+                else {
+                    cout << "Invalid cab choice.\n";
+                    continue;
+                }
+
+                cout << "Enter distance (in km): ";
+                cin >> distance;
+
+                booking b(userSystem.getCurrentUser().getUsername(), cabType, distance);
+                b.displayBooking();
+
+                userSystem.logoutUser(); // Logout after booking
+            }
         }
         else if (choice == 2) {
             userSystem.loginUser();

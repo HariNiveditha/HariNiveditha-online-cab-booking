@@ -1,7 +1,9 @@
+// Online C++ compiler to run C++ program online
 #include<iostream>
 #include<fstream>
 #include<vector>
 #include<string>
+#include<queue> 
 using namespace std;
  
 class user{
@@ -49,6 +51,7 @@ class cab{
 class booking{
     private:
         string username, cabType;
+        int rating;
         float distance, fare;
         bool cancelled = false;
 
@@ -58,12 +61,23 @@ class booking{
         cabType = type;
         distance = dist;
         fare = cab::getRate(type) * dist;
+        rating=-1;
     }
     
     void cancelBooking() {
         cancelled = true;
         cout << "Booking has been cancelled.\n";
     }
+    void giveRating(int r) {
+        if (r >= 1 && r <= 5) {
+          int  rating = r;
+            cout << "Thank you for rating your ride " << rating << " star(s)!\n";
+        } else {
+            cout << "Invalid rating. Please give between 1 and 5.\n";
+        }
+    }
+
+
 
     void displayBooking() {
       if(cancelled)
@@ -77,7 +91,21 @@ class booking{
         cout << "Cab Type: " << cabType << endl;
         cout << "Distance: " << distance << " km\n";
         cout << "Fare: Rs " << fare << endl;
+        
+        
+        if (rating != -1) { 
+    
+                cout<<"please rate the ride"<<endl;
+                
+                
+        }
+            else
+                cout << "Ride Rating: Not rated yet.\n";
+
       }
+    }
+    bool iscancelled(){
+        return cancelled;
     }
 
 };
@@ -88,7 +116,29 @@ class userLogin{
         user currentUser;
         bool isLogged = false;
         vector<booking> rideHistory;
+        queue<string> driverQueue; 
     public:
+    void initializeDrivers() {
+    driverQueue.push("Driver1");
+    driverQueue.push("Driver2");
+    driverQueue.push("Driver3");
+    driverQueue.push("Driver4");
+    driverQueue.push("Driver5");
+}
+bool isDriverAvailable() {
+    return !driverQueue.empty();
+}
+
+string assignDriver() {
+    if (!driverQueue.empty()) {
+        string driver = driverQueue.front();
+        driverQueue.pop();
+        return driver;
+    }
+    return "NoDriver";
+}
+
+
     void addUser(){
         string u,p;
         cout<<"Enter new username: ";
@@ -172,12 +222,28 @@ class userLogin{
                 cout << "No booking to cancel.\n";
             }
         }
+        void rateLastRide() {
+        if (rideHistory.empty()) {
+            cout << "No rides to rate.\n";
+            return;
+        }
+        if (rideHistory.back().iscancelled()) {
+            cout << "Cannot rate a cancelled ride.\n";
+            return;
+        }
+        int r;
+        cout << "Enter your ride rating (1-5 stars): ";
+        cin >> r;
+        rideHistory.back().giveRating(r);
+    }
+
         
 };
 
 int main() {
     userLogin userSystem;
     userSystem.loadUsersFromFile();
+    userSystem.initializeDrivers();
     int choice;
     char cancelChoice;
     cout << "Welcome to the Online Cab Booking System\n";
@@ -230,10 +296,25 @@ int main() {
 
                 cout << "Enter distance (in km): ";
                 cin >> distance;
+                if (!userSystem.isDriverAvailable()) {
+    cout << "No drivers available at the moment. Try again later.\n";
+    continue;
+}
+string assignedDriver = userSystem.assignDriver();
 
-                booking b(userSystem.getCurrentUser().getUsername(), cabType, distance);
-                b.displayBooking();
-                userSystem.addRide(b);
+
+booking b(userSystem.getCurrentUser().getUsername(), cabType, distance);
+
+cout << "Assigned Driver: " << assignedDriver << endl;
+b.displayBooking();
+
+            
+                int rideRating;
+    cout << "Please rate your ride (1-5 stars): ";
+    cin >> rideRating;
+    b.giveRating(rideRating);
+
+    userSystem.addRide(b);
             }
             else if (subChoice == 2) {
                 cout << "Do you want to cancel booking? (y/n): ";

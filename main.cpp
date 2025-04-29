@@ -55,14 +55,26 @@ class booking{
         float distance, fare;
         bool cancelled = false;
 
+
     public:
         booking(string user, string type, float dist) {
+
+        string driverName;
+
+    public:
+    booking(string user, string type, float dist, string driver) {
+
         username = user;
         cabType = type;
         distance = dist;
         fare = cab::getRate(type) * dist;
         rating=-1;
     }
+
+        rating = -1;
+        driverName = driver;
+    }    
+
     
     void cancelBooking() {
         cancelled = true;
@@ -70,7 +82,11 @@ class booking{
     }
     void giveRating(int r) {
         if (r >= 1 && r <= 5) {
+
            rating = r;
+
+          int  rating = r;
+
             cout << "Thank you for rating your ride " << rating << " star(s)!\n";
         } else {
             cout << "Invalid rating. Please give between 1 and 5.\n";
@@ -91,8 +107,10 @@ class booking{
         cout << "Cab Type: " << cabType << endl;
         cout << "Distance: " << distance << " km\n";
         cout << "Fare: Rs " << fare << endl;
-        
-        
+
+        cout << "Driver: " << driverName << endl;
+
+
         if (rating != -1) { 
     
                 cout<<"please rate the ride"<<endl;
@@ -108,6 +126,9 @@ class booking{
         return cancelled;
     }
 
+    string getDriver() {
+        return driverName;
+    }    
 };
 
 class userLogin{
@@ -170,6 +191,43 @@ string assignDriver() {
         }
         outFile.close();
     }
+        void initializeDrivers() {
+        driverQueue.push("Driver1\nCab Number: TS 09 EB 4811");
+        driverQueue.push("Driver2\nCab Number: TS 03 MF 9999");
+        }
+
+        void addUser(){
+            string u,p;
+            cout<<"Enter new username: ";
+            cin>>u;
+            cout<<"Enter new password: ";
+            cin>>p;
+            user newUser;
+            newUser.setData(u,p);
+            users.push_back(newUser);
+            saveUsersToFile(); 
+            cout<<"Registered successfully"<<endl;
+            currentUser = newUser;
+            isLogged = true;
+        }
+        void loadUsersFromFile() {
+            ifstream inFile("users.txt");
+            string u, p;
+            while (inFile >> u >> p) {
+                user newUser;
+                newUser.setData(u, p);
+                users.push_back(newUser);
+             }
+            inFile.close();
+        }
+        void saveUsersToFile() {
+            ofstream outFile("users.txt");
+            for (auto &user : users) {
+                outFile << user.getUsername() << " " << user.getPassword() << endl;
+            }
+            outFile.close();
+        }
+
     
         void loginUser(){
             string u,p;
@@ -218,11 +276,15 @@ string assignDriver() {
         void cancelLastRide() {
             if (!rideHistory.empty()) {
                 rideHistory.back().cancelBooking();
+
+                returnDriver(rideHistory.back().getDriver());
+
             } else {
                 cout << "No booking to cancel.\n";
             }
         }
         void rateLastRide() {
+
         if (rideHistory.empty()) {
             cout << "No rides to rate.\n";
             return;
@@ -237,6 +299,35 @@ string assignDriver() {
         rideHistory.back().giveRating(r);
     }
 
+            if (rideHistory.empty()) {
+                cout << "No rides to rate.\n";
+                return;
+            }
+            if (rideHistory.back().iscancelled()) {
+                cout << "Cannot rate a cancelled ride.\n";
+                return;
+            }
+            int r;
+            cout << "Enter your ride rating (1-5 stars): ";
+            cin >> r;
+            rideHistory.back().giveRating(r);
+            returnDriver(rideHistory.back().getDriver());
+         }
+        bool isDriverAvailable() {
+            return !driverQueue.empty();
+        }
+        
+        string assignDriver() {
+            if (!driverQueue.empty()) {
+                string driver = driverQueue.front();
+                driverQueue.pop();
+                return driver;
+            }
+            return "NoDriver";
+        }
+        void returnDriver(string driver) {
+            driverQueue.push(driver);
+        }        
         
 };
 
@@ -244,8 +335,13 @@ int main() {
     userLogin userSystem;
     userSystem.loadUsersFromFile();
     userSystem.initializeDrivers();
+
     int choice;
     char cancelChoice;
+    int choice, rideRating;
+    char cancelChoice;
+    bool rideBooked = false;
+
     cout << "Welcome to the Online Cab Booking System\n";
 
     while (true) {
@@ -297,6 +393,7 @@ int main() {
                 cout << "Enter distance (in km): ";
                 cin >> distance;
                 if (!userSystem.isDriverAvailable()) {
+
     cout << "No drivers available at the moment. Try again later.\n";
     continue;
 }
@@ -322,6 +419,36 @@ b.displayBooking();
                 if (cancelChoice == 'y' || cancelChoice == 'Y') {
                     userSystem.cancelLastRide();
                 }
+                    cout << "No drivers available at the moment. Try again later.\n";
+                    rideBooked = false;
+                    continue;
+                }
+                string assignedDriver = userSystem.assignDriver();
+
+
+                booking b(userSystem.getCurrentUser().getUsername(), cabType, distance, assignedDriver);
+
+
+                cout << "Assigned Driver: " << assignedDriver << endl;
+                b.displayBooking();
+                userSystem.addRide(b);
+                cout << "Please rate your ride (1-5 stars): ";
+                cin >> rideRating;
+                b.giveRating(rideRating);
+                rideBooked = true;
+            }
+            else if (subChoice == 2) {
+                if (!rideBooked4) {
+                    cout << "No current booking to cancel.\n";
+                } else {
+                    cout << "Do you want to cancel booking? (y/n): ";
+                    cin >> cancelChoice;
+                    if (cancelChoice == 'y' || cancelChoice == 'Y') {
+                        userSystem.cancelLastRide();
+                        rideBooked = false; 
+                    }
+                }
+                
             }
             else if (subChoice == 3) {
                 userSystem.viewRideHistory();

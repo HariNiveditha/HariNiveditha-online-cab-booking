@@ -70,7 +70,7 @@ class booking{
     }
     void giveRating(int r) {
         if (r >= 1 && r <= 5) {
-          int  rating = r;
+           rating = r;
             cout << "Thank you for rating your ride " << rating << " star(s)!\n";
         } else {
             cout << "Invalid rating. Please give between 1 and 5.\n";

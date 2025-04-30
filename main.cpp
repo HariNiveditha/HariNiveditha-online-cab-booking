@@ -194,6 +194,9 @@ string assignDriver() {
         void initializeDrivers() {
         driverQueue.push("Driver1\nCab Number: TS 09 EB 4811");
         driverQueue.push("Driver2\nCab Number: TS 03 MF 9999");
+         driverQueue.push("Driver3\nCab Number: TS 11 EQ 2007");
+         driverQueue.push("Driver4\nCab Number: TS 08 EG 0000");
+          driverQueue.push("Driver5\nCab Number: TS 09 MF 5632");
         }
 
         void addUser(){

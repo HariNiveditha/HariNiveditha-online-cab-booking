@@ -139,9 +139,7 @@ class userLogin{
         queue<string> driverQueue; 
     public:
    
-bool isDriverAvailable() {
-    return !driverQueue.empty();
-}
+
 
 string assignDriver() {
     if (!driverQueue.empty()) {
@@ -190,6 +188,9 @@ string assignDriver() {
          driverQueue.push("Driver3\nCab Number: TS 11 EQ 2007");
          driverQueue.push("Driver4\nCab Number: TS 08 EG 0000");
           driverQueue.push("Driver5\nCab Number: TS 09 MF 5632");
+        }
+       bool isDriverAvailable() {
+           return !driverQueue.empty();
         }
 
         void addUser(){

@@ -138,13 +138,7 @@ class userLogin{
         vector<booking> rideHistory;
         queue<string> driverQueue; 
     public:
-    void initializeDrivers() {
-    driverQueue.push("Driver1");
-    driverQueue.push("Driver2");
-    driverQueue.push("Driver3");
-    driverQueue.push("Driver4");
-    driverQueue.push("Driver5");
-}
+   
 bool isDriverAvailable() {
     return !driverQueue.empty();
 }

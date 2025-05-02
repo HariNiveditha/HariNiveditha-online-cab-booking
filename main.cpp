@@ -138,20 +138,8 @@ class userLogin{
         vector<booking> rideHistory;
         queue<string> driverQueue; 
     public:
-   
-
-
-string assignDriver() {
-    if (!driverQueue.empty()) {
-        string driver = driverQueue.front();
-        driverQueue.pop();
-        return driver;
-    }
-    return "NoDriver";
-}
-
-
-    void addUser(){
+ 
+      void addUser(){
         string u,p;
         cout<<"Enter new username: ";
         cin>>u;
@@ -192,6 +180,14 @@ string assignDriver() {
        bool isDriverAvailable() {
            return !driverQueue.empty();
         }
+       string assignDriver() {
+    if (!driverQueue.empty()) {
+        string driver = driverQueue.front();
+        driverQueue.pop();
+        return driver;
+    }
+    return "NoDriver";
+       }
 
         void addUser(){
             string u,p;

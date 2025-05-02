@@ -14,7 +14,7 @@ class user{
             username=u;
             password=p;
         }
-    //to check if the input credentials match the stored credentials
+   
         bool checkCredentials(string u,string p){
             if(username==u && password==p)
                 return true;
